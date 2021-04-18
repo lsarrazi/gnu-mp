@@ -4,7 +4,6 @@ GMP=${HOME}/opt/lib/libgmp.a
 INCLUDE=${HOME}/opt/include ./includes
 NAME=dist/gnu-mp.js
 FLAGS=-s NO_EXIT_RUNTIME=0 --bind --no-entry -O1 -s ASSERTIONS=1
-TESTFLAGS= -fsanitize=address -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=536870912
 RM=rm -rf
 FILES= Float.cpp Utils.cpp bindings.cpp
 SRC= $(addprefix ./src/,$(FILES))
@@ -16,11 +15,7 @@ $(NAME): $(SRC)
 	$(EM) $(SRC) $(MPFR) $(GMP) $(addprefix -I,$(INCLUDE)) -o $(NAME) $(FLAGS) -s MODULARIZE
 	node scripts/patch_glue.js $(NAME)
 	cp res/NodeAPI.js dist
-
-test: $(SRC)
-	$(EM) $(SRC) $(MPFR) $(GMP) $(addprefix -I,$(INCLUDE)) -o $(NAME) $(FLAGS) -s MODULARIZE $(TESTFLAGS)
-	node scripts/patch_glue.js $(NAME)
-	node tests/main.js
+	cp res/package.json dist
 
 index.html:
 	$(EM) $(SRC) $(MPFR) $(GMP) $(addprefix -I,$(INCLUDE)) -o dist/index.html $(FLAGS)
