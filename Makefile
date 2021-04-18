@@ -16,6 +16,7 @@ $(NAME): $(SRC)
 	node scripts/patch_glue.js $(NAME)
 	cp res/NodeAPI.js dist
 	cp res/package.json dist
+	cp res/WebAPI.js dist
 
 index.html:
 	$(EM) $(SRC) $(MPFR) $(GMP) $(addprefix -I,$(INCLUDE)) -o dist/index.html $(FLAGS)

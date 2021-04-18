@@ -1,8 +1,8 @@
 
 
 
-module.exports = async function () {
-	const Module = await require('./gnu-mp.js')();
+window.loadGnuMP = async function () {
+	const Module = await (await import('./gnu-mp.js')).default();
 	return {
 		Module,
 		Float: Module.Float,
