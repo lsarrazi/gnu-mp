@@ -1,0 +1,32 @@
+{
+  "name": "gnu-mp",
+  "version": "1.0.0",
+  "description": "Wrapper for GNU Multi Precision libraries",
+  "main": "NodeAPI.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsarrazi/gnu-mp.git"
+  },
+  "keywords": [
+    "float",
+    "precision",
+    "gmp",
+    "mpfr",
+    "gnu",
+    "mpc",
+    "complex",
+    "math",
+    "multi",
+    "big",
+    "decimal"
+  ],
+  "author": "lsarrazi",
+  "license": "LGPL-2.1",
+  "bugs": {
+    "url": "https://github.com/lsarrazi/gnu-mp/issues"
+  },
+  "homepage": "https://github.com/lsarrazi/gnu-mp#readme"
+}
