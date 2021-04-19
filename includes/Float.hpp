@@ -49,6 +49,9 @@ public:
 	std::string toString(int base);
 	std::string toString();
 	std::string toString(int base, int n);
+	bool isInteger();
+
+	
 
 	double toNumber();
 
@@ -96,6 +99,20 @@ public:
 	builder_pattern fmma(const Float &a, const Float &b, const Float &c);
 	builder_pattern fmms(const Float &a, const Float &b, const Float &c);
 	builder_pattern swap(Float &op);
+	
+
+	// integer and remainders
+	builder_pattern rint();
+	builder_pattern ceil();
+	builder_pattern floor();
+	builder_pattern round();
+	builder_pattern roundeven();
+	builder_pattern trunc();
+	builder_pattern rint_ceil();
+	builder_pattern rint_floor();
+	builder_pattern rint_round();
+	builder_pattern rint_roundeven();
+	builder_pattern rint_trunc();
 	// TRANCENDENTAL
 
 	builder_pattern log();
@@ -176,6 +193,20 @@ public:
 	static int op_hypot(Float &out, const Float &x, const Float &y);
 	static int op_sum(Float &out, val iterable);
 	static int op_dot(Float &out, val a, val b);
+
+	// Integer & Remainders
+
+	static int op_rint(Float &out, const Float &op);
+	static int op_ceil(Float &out, const Float &op);
+	static int op_floor(Float &out, const Float &op);
+	static int op_round(Float &out, const Float &op);
+	static int op_roundeven(Float &out, const Float &op);
+	static int op_trunc(Float &out, const Float &op);
+	static int op_rint_ceil(Float &out, const Float &op);
+	static int op_rint_floor(Float &out, const Float &op);
+	static int op_rint_round(Float &out, const Float &op);
+	static int op_rint_roundeven(Float &out, const Float &op);
+	static int op_rint_trunc(Float &out, const Float &op);
 
 	// TRANSCENDENTALES
 

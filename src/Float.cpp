@@ -118,6 +118,11 @@ double Float::toNumber()
 	return mpfr_get_d(&wrapped, rounding);
 }
 
+bool Float::isInteger()
+{
+	return !!mpfr_integer_p(&wrapped);
+}
+
 // operator < <= > >= == !=
 bool Float::operator<(const Float &op) const
 {
@@ -205,6 +210,18 @@ Float::builder_pattern Float::fmma(const Float &a, const Float &b, const Float &
 Float::builder_pattern Float::fmms(const Float &a, const Float &b, const Float &c) { Float::op_fmms(*this, *this, a, b, c); }
 Float::builder_pattern Float::swap(Float &op) { Float::op_swap(*this, op); }
 
+Float::builder_pattern Float::rint() { Float::op_rint(*this, *this); };
+Float::builder_pattern Float::ceil() { Float::op_ceil(*this, *this); };
+Float::builder_pattern Float::floor() { Float::op_floor(*this, *this); };
+Float::builder_pattern Float::round() { Float::op_round(*this, *this); };
+Float::builder_pattern Float::roundeven() { Float::op_roundeven(*this, *this); };
+Float::builder_pattern Float::trunc() { Float::op_trunc(*this, *this); };
+Float::builder_pattern Float::rint_ceil() { Float::op_rint_ceil(*this, *this); };
+Float::builder_pattern Float::rint_floor() { Float::op_rint_floor(*this, *this); };
+Float::builder_pattern Float::rint_round() { Float::op_rint_round(*this, *this); };
+Float::builder_pattern Float::rint_roundeven() { Float::op_rint_roundeven(*this, *this); };
+Float::builder_pattern Float::rint_trunc() { Float::op_rint_trunc(*this, *this); };
+
 Float::builder_pattern Float::log() { Float::op_log(*this, *this); }
 Float::builder_pattern Float::log2() { Float::op_log2(*this, *this); }
 Float::builder_pattern Float::log10() { Float::op_log10(*this, *this); }
@@ -214,27 +231,33 @@ Float::builder_pattern Float::exp() { Float::op_exp(*this, *this); }
 Float::builder_pattern Float::exp2() { Float::op_exp2(*this, *this); }
 Float::builder_pattern Float::exp10() { Float::op_exp10(*this, *this); }
 Float::builder_pattern Float::expm1() { Float::op_expm1(*this, *this); }
-Float::builder_pattern Float::pow(val v) {
+Float::builder_pattern Float::pow(val v)
+{
 	if (v.isNumber())
 	{
 		double d = v.as<double>();
-		if (d - (double)(long)d == 0.0 )
+		if (d - (double)(long)d == 0.0)
 			Float::op_pow_si(*this, *this, (long)d);
 		else
 			std::cerr << "error: floating numbers are prohibited in the pow function, only integers and Float objects are tolerated" << std::endl;
-	} else Float::op_pow(*this, *this, v.as<const Float&>());
+	}
+	else
+		Float::op_pow(*this, *this, v.as<const Float &>());
 }
-Float::builder_pattern Float::expow(val v) {
+Float::builder_pattern Float::expow(val v)
+{
 	if (v.isNumber())
 	{
 		double d = v.as<double>();
 		if (d < 0)
 			std::cerr << "error: negative integers are prohibited in the expow function" << std::endl;
-		else if (d - (double)(long)d == 0.0 )
+		else if (d - (double)(long)d == 0.0)
 			Float::op_ui_pow(*this, (long)d, *this);
 		else
 			std::cerr << "error: floating numbers are prohibited in the expow function, only integers and Float objects are tolerated" << std::endl;
-	} else Float::op_pow(*this, v.as<const Float&>(), *this);
+	}
+	else
+		Float::op_pow(*this, v.as<const Float &>(), *this);
 }
 Float::builder_pattern Float::pow_si(long op2) { Float::op_pow_si(*this, *this, op2); }
 Float::builder_pattern Float::ui_pow(unsigned long op1) { Float::op_ui_pow(*this, op1, *this); }
@@ -248,7 +271,7 @@ Float::builder_pattern Float::cot() { Float::op_cot(*this, *this); }
 Float::builder_pattern Float::acos() { Float::op_acos(*this, *this); }
 Float::builder_pattern Float::asin() { Float::op_asin(*this, *this); }
 Float::builder_pattern Float::atan() { Float::op_atan(*this, *this); }
-Float::builder_pattern Float::atan2(const Float& y, const Float& x) { Float::op_atan2(*this, y, x); }
+Float::builder_pattern Float::atan2(const Float &y, const Float &x) { Float::op_atan2(*this, y, x); }
 Float::builder_pattern Float::cosh() { Float::op_cosh(*this, *this); }
 Float::builder_pattern Float::sinh() { Float::op_sinh(*this, *this); }
 Float::builder_pattern Float::tanh() { Float::op_tanh(*this, *this); }
@@ -410,6 +433,20 @@ int Float::op_fac(Float &out, unsigned n)
 {
 	return mpfr_fac_ui(&out.wrapped, n, out.rounding);
 }
+
+// integer & remainders
+
+int Float::op_rint(Float &out, const Float &op) { return mpfr_rint(&out.wrapped, &op.wrapped, out.rounding); };
+int Float::op_ceil(Float &out, const Float &op) { return mpfr_ceil(&out.wrapped, &op.wrapped); };
+int Float::op_floor(Float &out, const Float &op) { return mpfr_floor(&out.wrapped, &op.wrapped); };
+int Float::op_round(Float &out, const Float &op) { return mpfr_round(&out.wrapped, &op.wrapped); };
+int Float::op_roundeven(Float &out, const Float &op) { return mpfr_roundeven(&out.wrapped, &op.wrapped); };
+int Float::op_trunc(Float &out, const Float &op) { return mpfr_trunc(&out.wrapped, &op.wrapped); };
+int Float::op_rint_ceil(Float &out, const Float &op) { return mpfr_rint_ceil(&out.wrapped, &op.wrapped, out.rounding); };
+int Float::op_rint_floor(Float &out, const Float &op) { return mpfr_rint_floor(&out.wrapped, &op.wrapped, out.rounding); };
+int Float::op_rint_round(Float &out, const Float &op) { return mpfr_rint_round(&out.wrapped, &op.wrapped, out.rounding); };
+int Float::op_rint_roundeven(Float &out, const Float &op) { return mpfr_rint_roundeven(&out.wrapped, &op.wrapped, out.rounding); };
+int Float::op_rint_trunc(Float &out, const Float &op) { return mpfr_rint_trunc(&out.wrapped, &op.wrapped, out.rounding); };
 
 // TRANSCENDENTAL
 
