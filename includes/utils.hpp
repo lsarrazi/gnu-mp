@@ -14,4 +14,6 @@ namespace Utils
 		int AwayZero = (int)mpfr_rnd_t::MPFR_RNDA;
 		int Faithful = (int)mpfr_rnd_t::MPFR_RNDF;
 	} RoundingModes;
+
+	template<typename F> std::string CharPtoStdStringFunction() { return std::string(F()); };
 }

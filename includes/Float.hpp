@@ -17,6 +17,8 @@ public:
 	typedef mpfr_rnd_t rnd_t;
 	typedef mpfr_exp_t exp_t;
 	typedef mpfr_sign_t sign_t;
+	typedef mpfr_prec_t prec_t;
+	typedef mpfr_flags_t flags_t;
 	typedef memory_view<mp_limb_t> mantissa_t;
 	typedef void builder_pattern;
 
@@ -27,7 +29,7 @@ private:
 public:
 	Float();
 	Float(val);
-
+	Float& operator=(const Float&);
 	~Float();
 
 	int getRounding() const;
@@ -49,11 +51,16 @@ public:
 	std::string toString(int base);
 	std::string toString();
 	std::string toString(int base, int n);
-	bool isInteger();
-
-	
-
 	double toNumber();
+	bool isInteger();
+	bool isNaN();
+	bool isInfinity();
+	bool isNumber();
+	bool isZero();
+	bool isRegular();
+	static int op_cmp_abs();
+	static int op_cmp_abs_ui();
+	bool less_greater(const Float &);
 
 	bool operator<(const Float &op) const;
 	bool operator==(const Float &op) const;
@@ -99,7 +106,6 @@ public:
 	builder_pattern fmma(const Float &a, const Float &b, const Float &c);
 	builder_pattern fmms(const Float &a, const Float &b, const Float &c);
 	builder_pattern swap(Float &op);
-	
 
 	// integer and remainders
 	builder_pattern rint();
@@ -268,6 +274,66 @@ public:
 	static int op_const_pi(Float &out);
 	static int op_const_euler(Float &out);
 	static int op_const_catalan(Float &out);
+
+	// others
+
+	static int op_sqr(Float &out, const Float &op);
+	static int op_cmp(const Float &op1, const Float &op2);
+	static int op_cmp_ui(const Float &op1, unsigned long int op2);
+	static int op_cmp_si(const Float &op1, long int op2);
+	static int op_cmp_d(const Float &op1, double op2);
+	static int op_cmp_ui_2exp(const Float &op1, unsigned long int op2, exp_t e);
+	static int op_cmp_si_2exp(const Float &op1, long int op2, exp_t e);
+	static int op_cmpabs(const Float &op1, const Float &op2);
+	static int op_cmpabs_ui(const Float &op1, unsigned long op2);
+	static int op_nan_p(const Float &op);
+	static int op_inf_p(const Float &op);
+	static int op_number_p(const Float &op);
+	static int op_zero_p(const Float &op);
+	static int op_regular_p(const Float &op);
+	static int op_sgn(const Float &op);
+	static int op_greater_p(const Float &op1, const Float &op2);
+	static int op_greaterequal_p(const Float &op1, const Float &op2);
+	static int op_less_p(const Float &op1, const Float &op2);
+	static int op_lessequal_p(const Float &op1, const Float &op2);
+	static int op_equal_p(const Float &op1, const Float &op2);
+	static int op_lessgreater_p(const Float &op1, const Float &op2);
+	static int op_unordered_p(const Float &op1, const Float &op2);
+	static int op_total_order_p(Float &out, const Float &y);
+	static int op_frac(Float &out, const Float &op);
+	static int op_modf(Float &iop, Float &fop, const Float &op);
+	static int op_fmod(Float &out, const Float &x, const Float &y);
+	static int op_fmodquo(Float &out, val q, const Float &x, const Float &y);
+	static int op_remainder(Float &out, const Float &x, const Float &y);
+	static int op_remquo(Float &out, val q, const Float &x, const Float &y);
+	static void op_set_default_rounding_mode(int rnd);
+	static int op_prec_round(Float &out, prec_t prec);
+	static int op_can_round(const Float &b, exp_t err, int rnd1, int rnd2, prec_t prec);
+	static prec_t op_min_prec(Float &out);
+	static void op_nexttoward(Float &out, const Float &y);
+	static void op_nextabove(Float &out);
+	static void op_nextbelow(Float &out);
+	static int op_min(Float &out, const Float &op1, const Float &op2);
+	static int op_max(Float &out, const Float &op1, const Float &op2);
+	static int op_nrandom(Float &out1, gmp_randstate_t state);
+	static int op_grandom(Float &out1, Float &out2, gmp_randstate_t state);
+	static int op_erandom(Float &out1, gmp_randstate_t state);
+	static exp_t op_get_exp(Float &out);
+	static int op_set_exp(Float &out, exp_t e);
+	static int op_signbit(const Float &op);
+	static int op_setsign(Float &out, const Float &op, int s);
+	static int op_copysign(Float &out, const Float &op1, const Float &op2);
+	static int op_set_emin(exp_t exp);
+	static int op_set_emax(exp_t exp);
+	static int op_check_range(Float &out, int t);
+	static int op_subnormalize(Float &out, int t);
+	static void op_flags_clear(flags_t mask);
+	static void op_flags_set(flags_t mask);
+	static flags_t op_flags_test(flags_t mask);
+	static void op_flags_restore(flags_t flags, flags_t mask);
+	static std::string op_get_version();
+	static std::string op_get_patches();
+	static std::string op_buildopt_tune_case();
 
 private:
 	static void jsArrayToMpfrArray(emscripten::val array, mpfr_ptr *out, int length);

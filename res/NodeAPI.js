@@ -24,7 +24,7 @@ module.exports = async function () {
 			callback(makeRegister);
 			for (const register of registers)
 				register.delete();
-			Module.free_cache()
+			Module.Float.free_cache()
 		}
 	}
 };

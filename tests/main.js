@@ -4,7 +4,7 @@
 
 
 	console.time('MPFR Load');
-	const module = await require('../dist/mpfr')();
+	const module = await require('../dist/gnu-mp')();
 	global.mpfr = module;
 	console.timeEnd('MPFR Load');
 

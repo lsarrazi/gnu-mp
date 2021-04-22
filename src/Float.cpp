@@ -24,6 +24,11 @@ Float::Float(val v)
 		mpfr_set(&wrapped, &op.wrapped, rounding);
 	}
 }
+Float& Float::operator=(const Float& op)
+{
+	mpfr_set(&wrapped, &op.wrapped, rounding);
+}
+
 Float::~Float() { mpfr_clear(&wrapped); }
 
 // rounding(mode)
@@ -305,7 +310,7 @@ Float::builder_pattern Float::const_log2() { Float::op_const_log2(*this); }
 Float::builder_pattern Float::const_pi() { Float::op_const_pi(*this); }
 Float::builder_pattern Float::const_euler() { Float::op_const_euler(*this); }
 Float::builder_pattern Float::const_catalan() { Float::op_const_catalan(*this); }
-// STATIC MEMBERS
+// MEMBERS
 
 int Float::op_add(Float &out, const Float &a, val v)
 {
@@ -755,3 +760,73 @@ void Float::jsArrayToMpfrArray(val array, mpfr_ptr *out, int length)
 	for (int i = 0; i < length; i++)
 		out[i] = &array[i].as<Float &>().wrapped;
 };
+
+std::string Float::op_get_version(){ return std::string(mpfr_get_version()); }
+std::string Float::op_get_patches(){ return std::string(mpfr_get_patches()); }
+std::string Float::op_buildopt_tune_case(){ return std::string(mpfr_buildopt_tune_case()); }
+int Float::op_sqr(Float &out, const Float &op) { return mpfr_sqr(&out.wrapped, &op.wrapped, out.rounding); }
+int Float::op_cmp(const Float &op1, const Float &op2) { return mpfr_cmp(&op1.wrapped, &op2.wrapped); }
+int Float::op_cmp_ui(const Float &op1, unsigned long int op2) { return mpfr_cmp_ui(&op1.wrapped, op2); }
+int Float::op_cmp_si(const Float &op1, long int op2) { return mpfr_cmp_si(&op1.wrapped, op2); }
+int Float::op_cmp_d(const Float &op1, double op2) { return mpfr_cmp_d(&op1.wrapped, op2); }
+int Float::op_cmp_ui_2exp(const Float &op1, unsigned long int op2, exp_t e) { return mpfr_cmp_ui_2exp(&op1.wrapped, op2, e); }
+int Float::op_cmp_si_2exp(const Float &op1, long int op2, exp_t e) { return mpfr_cmp_si_2exp(&op1.wrapped, op2, e); }
+int Float::op_cmpabs(const Float &op1, const Float &op2) { return mpfr_cmpabs(&op1.wrapped, &op2.wrapped); }
+int Float::op_cmpabs_ui(const Float &op1, unsigned long op2) { return mpfr_cmpabs_ui(&op1.wrapped, op2); }
+int Float::op_nan_p(const Float &op) { return mpfr_nan_p(&op.wrapped); }
+int Float::op_inf_p(const Float &op) { return mpfr_inf_p(&op.wrapped); }
+int Float::op_number_p(const Float &op) { return mpfr_number_p(&op.wrapped); }
+int Float::op_zero_p(const Float &op) { return mpfr_zero_p(&op.wrapped); }
+int Float::op_regular_p(const Float &op) { return mpfr_regular_p(&op.wrapped); }
+int Float::op_sgn(const Float &op) { return mpfr_sgn(&op.wrapped); }
+int Float::op_greater_p(const Float &op1, const Float &op2) { return mpfr_greater_p(&op1.wrapped, &op2.wrapped); }
+int Float::op_greaterequal_p(const Float &op1, const Float &op2) { return mpfr_greaterequal_p(&op1.wrapped, &op2.wrapped); }
+int Float::op_less_p(const Float &op1, const Float &op2) { return mpfr_less_p(&op1.wrapped, &op2.wrapped); }
+int Float::op_lessequal_p(const Float &op1, const Float &op2) { return mpfr_lessequal_p(&op1.wrapped, &op2.wrapped); }
+int Float::op_equal_p(const Float &op1, const Float &op2) { return mpfr_equal_p(&op1.wrapped, &op2.wrapped); }
+int Float::op_lessgreater_p(const Float &op1, const Float &op2) { return mpfr_lessgreater_p(&op1.wrapped, &op2.wrapped); }
+int Float::op_unordered_p(const Float &op1, const Float &op2) { return mpfr_unordered_p(&op1.wrapped, &op2.wrapped); }
+int Float::op_total_order_p(Float &out, const Float &y) { return mpfr_total_order_p(&out.wrapped, &y.wrapped); }
+int Float::op_frac(Float &out, const Float &op) { return mpfr_frac(&out.wrapped, &op.wrapped, out.rounding); }
+int Float::op_modf(Float &iop, Float &fop, const Float &op) { return mpfr_modf(&iop.wrapped, &fop.wrapped, &op.wrapped, iop.rounding); }
+int Float::op_fmod(Float &out, const Float &x, const Float &y) { return mpfr_fmod(&out.wrapped, &x.wrapped, &y.wrapped, out.rounding); }
+int Float::op_fmodquo(Float &out, val q, const Float &x, const Float &y) { 
+	long q_; 
+	auto r = mpfr_fmodquo(&out.wrapped, &q_, &x.wrapped, &y.wrapped, out.rounding);
+	if (!q.isUndefined() && !q.isNull())
+		q.set("q", q_);
+	return r;
+}
+int Float::op_remainder(Float &out, const Float &x, const Float &y) { return mpfr_remainder(&out.wrapped, &x.wrapped, &y.wrapped, out.rounding); }
+int Float::op_remquo(Float &out, val q, const Float &x, const Float &y) { 
+	long q_;
+	auto r = mpfr_remquo(&out.wrapped, &q_, &x.wrapped, &y.wrapped, out.rounding);
+	if (!q.isUndefined() && !q.isNull())
+		q.set("q", q_);
+	return r;
+}
+void Float::op_set_default_rounding_mode(int rnd) { return mpfr_set_default_rounding_mode((rnd_t)rnd); }
+int Float::op_prec_round(Float &out, prec_t prec) { return mpfr_prec_round(&out.wrapped, prec, out.rounding); }
+int Float::op_can_round(const Float &b, exp_t err, int rnd1, int rnd2, prec_t prec) { return mpfr_can_round(&b.wrapped, err, (rnd_t)rnd1, (rnd_t)rnd2, prec); }
+Float::prec_t Float::op_min_prec(Float &out) { return mpfr_min_prec(&out.wrapped); }
+void Float::op_nexttoward(Float &out, const Float &y) { return mpfr_nexttoward(&out.wrapped, &y.wrapped); }
+void Float::op_nextabove(Float &out) { return mpfr_nextabove(&out.wrapped); }
+void Float::op_nextbelow(Float &out) { return mpfr_nextbelow(&out.wrapped); }
+int Float::op_min(Float &out, const Float &op1, const Float &op2) { return mpfr_min(&out.wrapped, &op1.wrapped, &op2.wrapped, out.rounding); }
+int Float::op_max(Float &out, const Float &op1, const Float &op2) { return mpfr_max(&out.wrapped, &op1.wrapped, &op2.wrapped, out.rounding); }
+int Float::op_nrandom(Float &out1, gmp_randstate_t state) { return mpfr_nrandom(&out1.wrapped, state, out1.rounding); }
+int Float::op_grandom(Float &out1, Float &out2, gmp_randstate_t state) { return mpfr_grandom(&out1.wrapped, &out2.wrapped, state, out1.rounding); }
+int Float::op_erandom(Float &out1, gmp_randstate_t state) { return mpfr_erandom(&out1.wrapped, state, out1.rounding); }
+Float::exp_t Float::op_get_exp(Float &out) { return mpfr_get_exp(&out.wrapped); }
+int Float::op_set_exp(Float &out, exp_t e) { return mpfr_set_exp(&out.wrapped, e); }
+int Float::op_signbit(const Float &op) { return mpfr_signbit(&op.wrapped); }
+int Float::op_setsign(Float &out, const Float &op, int s) { return mpfr_setsign(&out.wrapped, &op.wrapped, s, out.rounding); }
+int Float::op_copysign(Float &out, const Float &op1, const Float &op2) { return mpfr_copysign(&out.wrapped, &op1.wrapped, &op2.wrapped, out.rounding); }
+int Float::op_set_emin(exp_t exp) { return mpfr_set_emin(exp); }
+int Float::op_set_emax(exp_t exp) { return mpfr_set_emax(exp); }
+int Float::op_check_range(Float &out, int t) { return mpfr_check_range(&out.wrapped, t, out.rounding); }
+int Float::op_subnormalize(Float &out, int t) { return mpfr_subnormalize(&out.wrapped, t, out.rounding); }
+void Float::op_flags_clear(flags_t mask) { return mpfr_flags_clear(mask); }
+void Float::op_flags_set(flags_t mask) { return mpfr_flags_set(mask); }
+Float::flags_t Float::op_flags_test(flags_t mask) { return mpfr_flags_test(mask); }
+void Float::op_flags_restore(flags_t flags, flags_t mask) { return mpfr_flags_restore(flags, mask); }
