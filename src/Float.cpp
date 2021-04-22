@@ -13,6 +13,7 @@ Float::Float()
 {
 	mpfr_init(&wrapped);
 }
+
 Float::Float(val v)
 {
 	if (v.isNumber())
@@ -24,9 +25,33 @@ Float::Float(val v)
 		mpfr_set(&wrapped, &op.wrapped, rounding);
 	}
 }
+
+Float::Float(prec_t prec)
+{
+	mpfr_init2(&wrapped, prec);
+}
+
+Float::Float(prec_t prec, double v) : Float(prec)
+{
+	*this = v;
+}
+
+Float::Float(const Float& op)
+{
+	mpfr_init2(&wrapped, op.getPrecision());
+	mpfr_set(&wrapped, &op.wrapped, rounding);
+}
+
 Float& Float::operator=(const Float& op)
 {
 	mpfr_set(&wrapped, &op.wrapped, rounding);
+	return *this;
+}
+
+Float& Float::operator=(double v)
+{
+	mpfr_set_d(&wrapped, v, rounding);
+	return *this;
 }
 
 Float::~Float() { mpfr_clear(&wrapped); }
