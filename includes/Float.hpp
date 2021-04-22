@@ -29,6 +29,10 @@ private:
 public:
 	Float();
 	Float(val);
+	Float(prec_t);
+	Float(prec_t, double);
+	Float(const Float&);
+	Float& operator=(double);
 	Float& operator=(const Float&);
 	~Float();
 
