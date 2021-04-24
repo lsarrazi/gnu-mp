@@ -1,4 +1,5 @@
 #include "Float.hpp"
+#include "FloatRegister.hpp"
 #include "utils.hpp"
 #include <emscripten/bind.h>
 
@@ -10,6 +11,8 @@ EMSCRIPTEN_BINDINGS(my_module)
 	constant("TowardMinusInfinity", (int)mpfr_rnd_t::MPFR_RNDD);
 	constant("AwayZero", (int)mpfr_rnd_t::MPFR_RNDA);
 	constant("Faithful", (int)mpfr_rnd_t::MPFR_RNDF);
+
+	function("float_register_test", &float_register_test);
 
 	class_<Float>("Float")
 		.constructor()
@@ -30,9 +33,9 @@ EMSCRIPTEN_BINDINGS(my_module)
 		.function("setSign", &Float::setSign)
 
 		// conversions
-		.function("toString", select_overload<std::string()>(&Float::toString))
-		.function("toString", select_overload<std::string(int)>(&Float::toString))
-		.function("toString", select_overload<std::string(int, int)>(&Float::toString))
+		.function("toString", select_overload<std::string() const>(&Float::toString))
+		.function("toString", select_overload<std::string(int) const>(&Float::toString))
+		.function("toString", select_overload<std::string(int, int) const>(&Float::toString))
 		.function("toNumber", &Float::toNumber)
 		.function("valueOf", &Float::toNumber)
 

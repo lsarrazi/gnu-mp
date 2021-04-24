@@ -6,7 +6,9 @@
 
 using namespace emscripten;
 
-#include "Float.hpp"
+class FloatRegister;
+
+
 #include "utils.hpp"
 
 class Float
@@ -27,13 +29,17 @@ private:
 	rnd_t rounding = MPFR_RNDN;
 
 public:
-	Float();
 	Float(val);
-	Float(prec_t);
-	Float(prec_t, double);
+	Float(prec_t = getDefaultPrecision());
+	Float(double, prec_t = getDefaultPrecision());
+	Float(const char*, prec_t = getDefaultPrecision(), int base = 10);
 	Float(const Float&);
+	Float(const FloatRegister&);
 	Float& operator=(double);
 	Float& operator=(const Float&);
+	Float& operator=(const FloatRegister& r);
+	Float& operator=(const char *);
+
 	~Float();
 
 	int getRounding() const;
@@ -52,19 +58,24 @@ public:
 	builder_pattern setDouble(double x);
 	builder_pattern setFloat(const Float &tocopy);
 	builder_pattern set(val v);
-	std::string toString(int base);
-	std::string toString();
-	std::string toString(int base, int n);
-	double toNumber();
-	bool isInteger();
-	bool isNaN();
-	bool isInfinity();
-	bool isNumber();
-	bool isZero();
-	bool isRegular();
+	std::string toString(int base) const;
+	std::string toString() const;
+	std::string toString(int base, int n) const;
+	double toNumber() const;
+	bool isInteger() const;
+	bool isNaN() const ;
+	bool isInfinity() const ;
+	bool isNumber() const ;
+	bool isZero() const ;
+	bool isRegular() const ;
 	static int op_cmp_abs();
 	static int op_cmp_abs_ui();
 	bool less_greater(const Float &);
+
+	explicit operator int();
+	explicit operator long();
+	explicit operator unsigned();
+	explicit operator unsigned long();
 
 	bool operator<(const Float &op) const;
 	bool operator==(const Float &op) const;
@@ -182,6 +193,9 @@ public:
 	builder_pattern const_pi();
 	builder_pattern const_euler();
 	builder_pattern const_catalan();
+
+	static prec_t getDefaultPrecision();
+	static void setDefaultPrecision(prec_t prec);
 
 	static int op_add(Float &out, const Float &a, val v);
 	static int op_sub(Float &out, const Float &a, val v);
@@ -342,3 +356,5 @@ public:
 private:
 	static void jsArrayToMpfrArray(emscripten::val array, mpfr_ptr *out, int length);
 };
+
+#include "FloatRegister.hpp"

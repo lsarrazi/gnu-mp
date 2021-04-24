@@ -9,11 +9,6 @@ using namespace emscripten;
 #include "Float.hpp"
 #include "utils.hpp"
 
-Float::Float()
-{
-	mpfr_init(&wrapped);
-}
-
 Float::Float(val v)
 {
 	if (v.isNumber())
@@ -31,7 +26,7 @@ Float::Float(prec_t prec)
 	mpfr_init2(&wrapped, prec);
 }
 
-Float::Float(prec_t prec, double v) : Float(prec)
+Float::Float(double v, prec_t prec) : Float(prec)
 {
 	*this = v;
 }
@@ -42,9 +37,25 @@ Float::Float(const Float& op)
 	mpfr_set(&wrapped, &op.wrapped, rounding);
 }
 
+Float::Float(const FloatRegister& op) : Float((const Float&)op)
+{
+	FloatRegister::release(op);
+}
+
+Float::Float(const char* v, prec_t prec, int base) : Float(prec)
+{
+	mpfr_set_str(&wrapped, v, base, rounding);
+}
+
 Float& Float::operator=(const Float& op)
 {
 	mpfr_set(&wrapped, &op.wrapped, rounding);
+	return *this;
+}
+
+Float& Float::operator=(const char * str)
+{
+	mpfr_set_str(&wrapped, str, 10, rounding);
 	return *this;
 }
 
@@ -53,6 +64,18 @@ Float& Float::operator=(double v)
 	mpfr_set_d(&wrapped, v, rounding);
 	return *this;
 }
+
+Float& Float::operator=(const FloatRegister& r)
+{
+	*this = (Float&)r;
+	FloatRegister::release(r);
+	return *this;
+}
+
+Float::operator int(){ return mpfr_get_si(&wrapped, MPFR_RNDZ); }
+Float::operator long(){ return mpfr_get_si(&wrapped, MPFR_RNDZ); }
+Float::operator unsigned(){ return mpfr_get_ui(&wrapped, MPFR_RNDZ); }
+Float::operator unsigned long(){ return mpfr_get_ui(&wrapped, MPFR_RNDZ); }
 
 Float::~Float() { mpfr_clear(&wrapped); }
 
@@ -67,6 +90,9 @@ Float::builder_pattern Float::setRounding(int mode)
 {
 	rounding = static_cast<rnd_t>(mode);
 }
+
+Float::prec_t Float::getDefaultPrecision() { return mpfr_get_default_prec(); };
+void Float::setDefaultPrecision(prec_t prec) { mpfr_set_default_prec(prec); };
 
 // precision
 Float::size_t Float::getPrecision() const { return mpfr_get_prec(&wrapped); };
@@ -124,15 +150,14 @@ Float::builder_pattern Float::set(val v)
 }
 
 // toString(int base = 10, int n = 0)
-std::string Float::toString(int base) { return toString(base, 0); }
-std::string Float::toString() { return toString(10, 0); }
-std::string Float::toString(int base, int n)
+std::string Float::toString(int base) const { return toString(base, 0); }
+std::string Float::toString() const { return toString(10, 0); }
+std::string Float::toString(int base, int n) const
 {
 	std::stringstream ss;
 	mpfr_exp_t exp;
 	char *str = mpfr_get_str(nullptr, &exp, base, n, &wrapped, rounding);
-	if (exp)
-		exp--;
+	exp--;
 	if (getSign() > 0)
 		ss << str[0] << '.' << &str[1];
 	else
@@ -143,12 +168,12 @@ std::string Float::toString(int base, int n)
 }
 
 // toNumber()
-double Float::toNumber()
+double Float::toNumber() const
 {
 	return mpfr_get_d(&wrapped, rounding);
 }
 
-bool Float::isInteger()
+bool Float::isInteger() const
 {
 	return !!mpfr_integer_p(&wrapped);
 }

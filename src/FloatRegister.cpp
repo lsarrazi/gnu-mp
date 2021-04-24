@@ -1,27 +1,35 @@
 #include <stdlib.h>
 #include "Float.hpp"
 #include "FloatRegister.hpp"
+#include <vector>
 
-int count = 0;
+#define FLOAT_REG_FUNCTION(NAME, FUNC) FloatRegister& NAME(FloatRegister& r) { FUNC(r, r); return r; }; \
+FloatRegister& NAME(const Float& f) { auto& r = FloatRegister::adopt(); FUNC(r, f); return r; };
 
+std::vector<FloatRegister*> FloatRegister::registers = std::vector<FloatRegister *>();
+
+FloatRegister::offset_t FloatRegister::count = 0;
+FloatRegister::offset_t FloatRegister::allocated_count = 0;
+FloatRegister::offset_t FloatRegister::freed_count = 0;
+
+FloatRegister::FloatRegister(double v, offset_t offset) : Float(v), offset(offset) { }
 FloatRegister::FloatRegister(const Float &init, offset_t offset) : Float(init), offset(offset) {}
-FloatRegister &FloatRegister::operator=(const Float &r) { Float::operator=(r); };
+FloatRegister::FloatRegister(offset_t offset) : Float(), offset(offset) {}
+FloatRegister &FloatRegister::operator=(const Float &r) { Float::operator=(r); return *this; };
+FloatRegister &FloatRegister::operator=(double r) { Float::operator=(r); return *this; };
 
-FloatRegister &FloatRegister::adopt(const Float &init)
-{
-	if (count == registers.size())
-	{
-		registers.push_back(new FloatRegister(init, count));
-		return *registers[count++];
-	}
-	else
-		return *registers[count++] = init;
-}
+Float &operator+=(Float& f, FloatRegister& r) { f += (Float&)r; FloatRegister::release(r); return f; };
+Float &operator-=(Float& f, FloatRegister& r) { f -= (Float&)r; FloatRegister::release(r); return f; };
+Float &operator*=(Float& f, FloatRegister& r) { f *= (Float&)r; FloatRegister::release(r); return f; };
+Float &operator/=(Float& f, FloatRegister& r) { f /= (Float&)r; FloatRegister::release(r); return f; };
 
 void FloatRegister::release(const FloatRegister &regist)
 {
 	if (count == 0)
+	{
+		std::cerr << "release register but no register adopted" << std::endl;
 		throw std::runtime_error("release register but no register adopted");
+	}
 	FloatRegister *&entry = registers[regist.offset];
 	FloatRegister *&last = registers[--count];
 	std::swap(entry->offset, last->offset);
@@ -31,34 +39,145 @@ void FloatRegister::release(const FloatRegister &regist)
 void FloatRegister::clean()
 {
 	count = 0;
-	for (auto &regist : registers)
-		delete regist;
-	registers.resize(0);
-	registers.shrink_to_fit();
+	freed_count += registers.size();
+	registers.clear();
 }
 
-FloatRegister &operator+(Float &a, FloatRegister &b)
-{
-	b += a;
-	return b;
-}
+int FloatRegister::getActiveRegisterCount() { return count; }
+int FloatRegister::getAllocationCount() { return allocated_count; }
+int FloatRegister::getFreedRegisterCount() { return freed_count; }
 
-FloatRegister &operator+(FloatRegister &b, Float &a)
-{
-	b += a;
-	return b;
-}
+FloatRegister::operator int() { FloatRegister::release(*this); return Float::operator int(); }
+FloatRegister::operator long() { FloatRegister::release(*this); return Float::operator long(); }
+FloatRegister::operator unsigned() { FloatRegister::release(*this); return Float::operator unsigned(); }
+FloatRegister::operator unsigned long() { FloatRegister::release(*this); return Float::operator unsigned long(); }
 
-FloatRegister &operator+(FloatRegister &a, FloatRegister &b)
-{
-	b += a;
-	FloatRegister::release(a);
-	return b;
-}
+FloatRegister& operator-(FloatRegister& r){ r.neg(); return r; }
+FloatRegister& operator-(const Float& f){ auto& r = FloatRegister::adopt(f); r.neg(); return r; }
 
-FloatRegister &operator+(Float &a, Float &b)
+FloatRegister &operator+(const Float &a, FloatRegister &b) { b += a; return b; }
+FloatRegister &operator+(FloatRegister &b, const Float &a) { b += a; return b; }
+FloatRegister &operator+(FloatRegister &a, FloatRegister &b) { b += a; return b; }
+FloatRegister &operator+(const Float &a, const Float &b) { FloatRegister &r = FloatRegister::adopt(a); r += b; return r; }
+
+FloatRegister &operator+(const Float &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r += b; return r; }
+FloatRegister &operator+(FloatRegister &b, double a) { b += a; return b; }
+FloatRegister &operator+(double a, FloatRegister &b) { b += a; return b; }
+FloatRegister &operator+(double a, const Float &b) { FloatRegister &r = FloatRegister::adopt(b); r += a; return r; }
+
+FloatRegister &operator-(const Float &a, FloatRegister &b) { b.neg(); b += a; return b; }
+FloatRegister &operator-(FloatRegister &b, const Float &a) { b -= a; return b; }
+FloatRegister &operator-(FloatRegister &a, FloatRegister &b) { a -= b; return a; }
+FloatRegister &operator-(const Float &a, const Float &b) { FloatRegister &r = FloatRegister::adopt(a); r -= b; return r; }
+
+FloatRegister &operator-(const Float &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r -= b; return r; }
+FloatRegister &operator-(FloatRegister &b, double a) { b -= a; return b; }
+FloatRegister &operator-(double a, FloatRegister &b) { b.neg(); b += a; return b; }
+FloatRegister &operator-(double a, const Float &b) { FloatRegister &r = FloatRegister::adopt(b); r.neg(); r += a; return r; }
+
+FloatRegister &operator*(const Float &a, FloatRegister &b) { b *= a; return b; }
+FloatRegister &operator*(FloatRegister &b, const Float &a) { b *= a; return b; }
+FloatRegister &operator*(FloatRegister &a, FloatRegister &b) { b *= a; return b; }
+FloatRegister &operator*(const Float &a, const Float &b) { FloatRegister &r = FloatRegister::adopt(a); r *= b; return r; }
+
+FloatRegister &operator*(const Float &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r *= b; return r; }
+FloatRegister &operator*(FloatRegister &b, double a) { b *= a; return b; }
+FloatRegister &operator*(double a, FloatRegister &b) { b *= a; return b; }
+FloatRegister &operator*(double a, const Float &b) { FloatRegister &r = FloatRegister::adopt(b); r *= a; return r; }
+
+FloatRegister &operator/(const Float &a, FloatRegister &b) { Float::op_div(b, a, val((Float&)b)); return b; }
+FloatRegister &operator/(FloatRegister &b, const Float &a) { b /= a; return b; }
+FloatRegister &operator/(FloatRegister &b, FloatRegister &a) { b /= a; return b; }
+FloatRegister &operator/(const Float &a, const Float &b) { FloatRegister &r = FloatRegister::adopt(a); r /= b; return r; }
+
+FloatRegister &operator/(const Float &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r /= b; return r; }
+FloatRegister &operator/(FloatRegister &b, double a) { b /= a; return b; }
+FloatRegister &operator/(double a, FloatRegister &b) { FloatRegister &r = FloatRegister::adopt(a); r /= b; return r; }
+FloatRegister &operator/(double a, const Float &b) { FloatRegister &r = FloatRegister::adopt(a); r /= b; return r; }
+
+bool operator<(FloatRegister& a, FloatRegister& b) { bool r = (Float&)a < (Float&)b; FloatRegister::release(a); FloatRegister::release(b); return r; }
+bool operator<(FloatRegister& a, const Float& b) { bool r = (Float&)a < (Float&)b; FloatRegister::release(a); return r; }
+bool operator<(const Float& a, FloatRegister& b) { bool r = (Float&)a < (Float&)b; FloatRegister::release(b); return r; }
+
+bool operator==(FloatRegister& a, FloatRegister& b) { bool r = (Float&)a == (Float&)b; FloatRegister::release(a); FloatRegister::release(b); return r; }
+bool operator==(FloatRegister& a, const Float& b) { bool r = (Float&)a == (Float&)b; FloatRegister::release(a); return r; }
+bool operator==(const Float& a, FloatRegister& b) { bool r = (Float&)a == (Float&)b; FloatRegister::release(b); return r; }
+
+bool operator!=(FloatRegister& a, FloatRegister& b) { return !(a == b); };
+bool operator!=(FloatRegister& a, const Float& b) { return !(a == b); };
+bool operator!=(const Float& a, FloatRegister& b) { return !(a == b); };
+
+bool operator>(FloatRegister& a, FloatRegister& b) { return b < a; };
+bool operator>(FloatRegister& a, const Float& b) { return b < a; };
+bool operator>(const Float& a, FloatRegister& b) { return b < a; };
+
+bool operator<=(FloatRegister& a, FloatRegister& b) { return !(b < a); };
+bool operator<=(FloatRegister& a, const Float& b) { return !(b < a); };
+bool operator<=(const Float& a, FloatRegister& b) { return !(b < a); };
+
+bool operator>=(FloatRegister& a, FloatRegister& b) { return !(a < b); };
+bool operator>=(FloatRegister& a, const Float& b) { return !(a < b); };
+bool operator>=(const Float& a, FloatRegister& b) { return !(a < b); };
+
+Float FloatRegister::toFloat(FloatRegister& r) { FloatRegister::release(r); return r; } 
+
+FLOAT_REG_FUNCTION(atan, Float::op_atan)
+FLOAT_REG_FUNCTION(log, Float::op_log)
+FLOAT_REG_FUNCTION(exp, Float::op_exp)
+FLOAT_REG_FUNCTION(sqrt, Float::op_sqrt)
+FLOAT_REG_FUNCTION(fabs, Float::op_abs)
+
+#include "quadrature/TanhSinh.hpp"
+#include <emscripten.h>
+
+void float_register_test()
 {
-	FloatRegister &r = FloatRegister::adopt(a);
-	r += b;
-	return r;
+
+	/*Float a("1.4", 1024);
+	Float b("2.6", 1024);
+
+	Float r = a*a+b*(a+b)-a-b + 1 - 2 * (a-b-(1/(b+a*0.25))); // ~1.243796e+1
+
+	std::cout << r.toString() << std::endl;
+	
+	Float s = exp(sqrt(b + log(a + b)) - 1); // ~2.7089758e+0
+
+	b *= a - a;
+
+	std::cout << b.toString() << std::endl;
+	std::cout << "s output:" << s.toString() << std::endl;
+
+	std::cout << "s to integer:" << (int)s << std::endl;
+
+	std::cout << "r: output: " << r.toString() << std::endl;*/
+
+	EM_ASM(console.time('Integrator compilation'));
+
+	TanhSinh integrator(2048);
+
+	EM_ASM(console.timeEnd('Integrator compilation'));
+
+	integrator.setIntegrand([](const Float& x){ return FloatRegister::toFloat(sqrt(x)); });
+
+	integrator.setBounds(0., 1.);
+
+	EM_ASM(console.time('Integration'));
+
+	integrator.integrate();
+
+	EM_ASM(console.timeEnd('Integration'));
+
+	const Float& integral = integrator.getIntegralApprox();
+
+	std::cout << "prec" << integral.getPrecision() << "integral: " << integral.toString() << std::endl;
+
+	std::cout << "active registers: " << FloatRegister::getActiveRegisterCount() << std::endl;
+
+	std::cout << "number of alloc: " << FloatRegister::getAllocationCount() << std::endl;
+
+	std::cout << "freed registers: " << FloatRegister::getFreedRegisterCount() << std::endl;
+
+	FloatRegister::clean();
+
+	std::cout << "freed registers after cleaning: " << FloatRegister::getFreedRegisterCount() << std::endl;
 }

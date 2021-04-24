@@ -3,9 +3,9 @@ CPP=clang++
 MPFR=${HOME}/opt/lib/libmpfr.a
 GMP=${HOME}/opt/lib/libgmp.a
 INCLUDE=${HOME}/opt/include ./includes
-FLAGS=-s NO_EXIT_RUNTIME=0 --bind --no-entry -O1 -s ASSERTIONS=1
+FLAGS=-s NO_EXIT_RUNTIME=0 --bind --no-entry -O0 -s ASSERTIONS=1 -g3
 RM=rm -rf
-FILES= Float.cpp Utils.cpp bindings.cpp
+FILES= Float.cpp FloatRegister.cpp Utils.cpp bindings.cpp quadrature/TanhSinh.cpp
 SRC= $(addprefix ./src/,$(FILES))
 
 all: dist
@@ -29,7 +29,6 @@ dist/gnu-mp.js: $(SRC)
 	mkdir -p dist
 	$(EM) $(SRC) $(MPFR) $(GMP) $(addprefix -I,$(INCLUDE)) -o dist/gnu-mp.js $(FLAGS) -s MODULARIZE
 	node scripts/patch_glue.js dist/gnu-mp.js
-	
 
 index.html:
 	$(EM) $(SRC) $(MPFR) $(GMP) $(addprefix -I,$(INCLUDE)) -o dist/index.html $(FLAGS)
