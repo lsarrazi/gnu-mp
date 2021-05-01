@@ -33,6 +33,7 @@ Float::Float(double v, prec_t prec) : Float(prec)
 
 Float::Float(const Float& op)
 {
+	std::cout << "alloc copy" << std::endl;
 	mpfr_init2(&wrapped, op.getPrecision());
 	mpfr_set(&wrapped, &op.wrapped, rounding);
 }
@@ -65,9 +66,12 @@ Float& Float::operator=(double v)
 	return *this;
 }
 
-Float& Float::operator=(const FloatRegister& r)
+Float& Float::operator=(FloatRegister& r)
 {
-	*this = (Float&)r;
+	if (r.getPrecision() == getPrecision())
+		swap(reinterpret_cast<Float&>(r));
+	else
+		*this = reinterpret_cast<Float&>(r);
 	FloatRegister::release(r);
 	return *this;
 }
@@ -76,6 +80,7 @@ Float::operator int(){ return mpfr_get_si(&wrapped, MPFR_RNDZ); }
 Float::operator long(){ return mpfr_get_si(&wrapped, MPFR_RNDZ); }
 Float::operator unsigned(){ return mpfr_get_ui(&wrapped, MPFR_RNDZ); }
 Float::operator unsigned long(){ return mpfr_get_ui(&wrapped, MPFR_RNDZ); }
+Float::operator double(){ return mpfr_get_d(&wrapped, MPFR_RNDN); }
 
 Float::~Float() { mpfr_clear(&wrapped); }
 

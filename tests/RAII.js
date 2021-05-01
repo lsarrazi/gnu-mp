@@ -1,7 +1,7 @@
 
 async function main() {
 
-	const {RAII, Rounding, Float} = await require('../dist/NodeAPI')();
+	const {RAII, Rounding, Float} = await require('../dist/gnu-mp')();
 
 	const save = new Float(128)
 	let fake_save;

@@ -30,14 +30,14 @@ private:
 
 public:
 	Float(val);
-	Float(prec_t = getDefaultPrecision());
+	explicit Float(prec_t = getDefaultPrecision());
 	Float(double, prec_t = getDefaultPrecision());
 	Float(const char*, prec_t = getDefaultPrecision(), int base = 10);
 	Float(const Float&);
 	Float(const FloatRegister&);
 	Float& operator=(double);
 	Float& operator=(const Float&);
-	Float& operator=(const FloatRegister& r);
+	Float& operator=(FloatRegister& r);
 	Float& operator=(const char *);
 
 	~Float();
@@ -76,6 +76,7 @@ public:
 	explicit operator long();
 	explicit operator unsigned();
 	explicit operator unsigned long();
+	explicit operator double();
 
 	bool operator<(const Float &op) const;
 	bool operator==(const Float &op) const;

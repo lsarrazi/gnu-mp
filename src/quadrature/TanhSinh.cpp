@@ -8,11 +8,13 @@
 #include "Float.hpp"
 #include "FloatRegister.hpp"
 
+#define CALL_OR_BREAK(...) if (call(__VA_ARGS__) == 0) break
+
 void TanhSinh::intdeini(int lenaw, const Float &tiny, const Float &eps, Float *aw)
 {
 
 	/* ---- adjustable parameter ---- */
-	const Float efs("0.1"), hoff("8.5");
+	const Float efs(0.1), hoff(8.5);
 	/* ------------------------------ */
 	int noff, nk, k, j;
 	Float pi2, tinyln, epsln, h0, ehp, ehm, h, t, ep, em, xw, wg;
@@ -69,18 +71,17 @@ void TanhSinh::intdeini(int lenaw, const Float &tiny, const Float &eps, Float *a
 	aw[0] = k - 3;
 }
 
-void TanhSinh::intde(Float (*f)(const Float &), const Float &a, const Float &b, Float *aw,
+void TanhSinh::intde(Integrand f, const Float &a, const Float &b, Float *aw,
 					 Float *i, Float *err)
 {
 	int noff, lenawm, nk, k, j, jtmp, jm, m, klim;
-	Float epsh, ba, ir, xa, fa, fb, errt, errh, errd, h, iback, irback;
-
+	Float epsh, ba, ir, xa, fa, fb, errt, errh, errd, h, iback, irback, d;
 	noff = 5;
 	lenawm = (int)(aw[0] + 0.5);
 	nk = (int)(aw[1] + 0.5);
 	epsh = aw[4];
 	ba = b - a;
-	*i = (*f)((a + b) * aw[noff]);
+	call(*i, (a + b) * aw[noff], ba * aw[noff]);
 	ir = *i * aw[noff + 1];
 	*i *= aw[noff + 2];
 	*err = fabs(*i);
@@ -90,8 +91,8 @@ void TanhSinh::intde(Float (*f)(const Float &), const Float &a, const Float &b, 
 	{
 		j += 3;
 		xa = ba * aw[j];
-		fa = (*f)(a + xa);
-		fb = (*f)(b - xa);
+		CALL_OR_BREAK(fa, a + xa, xa);
+		CALL_OR_BREAK(fb, b - xa, xa);
 		ir += (fa + fb) * aw[j + 1];
 		fa *= aw[j + 2];
 		fb *= aw[j + 2];
@@ -105,7 +106,8 @@ void TanhSinh::intde(Float (*f)(const Float &), const Float &a, const Float &b, 
 	while (fabs(fa) > errt && j < k)
 	{
 		j += 3;
-		fa = (*f)(a + ba * aw[j]);
+		d = ba * aw[j];
+		CALL_OR_BREAK(fa, a + d, d);
 		ir += fa * aw[j + 1];
 		fa *= aw[j + 2];
 		*i += fa;
@@ -115,7 +117,8 @@ void TanhSinh::intde(Float (*f)(const Float &), const Float &a, const Float &b, 
 	while (fabs(fb) > errt && j < k)
 	{
 		j += 3;
-		fb = (*f)(b - ba * aw[j]);
+		d = ba * aw[j];
+		CALL_OR_BREAK(fb, b - d, d);
 		ir += fb * aw[j + 1];
 		fb *= aw[j + 2];
 		*i += fb;
@@ -136,8 +139,8 @@ void TanhSinh::intde(Float (*f)(const Float &), const Float &a, const Float &b, 
 			for (j = k + 3; j <= jtmp; j += 3)
 			{
 				xa = ba * aw[j];
-				fa = (*f)(a + xa);
-				fb = (*f)(b - xa);
+				CALL_OR_BREAK(fa, a + xa, xa);
+				CALL_OR_BREAK(fb, b - xa, xa);
 				ir += (fa + fb) * aw[j + 1];
 				*i += (fa + fb) * aw[j + 2];
 			}
@@ -146,7 +149,8 @@ void TanhSinh::intde(Float (*f)(const Float &), const Float &a, const Float &b, 
 			do
 			{
 				j += 3;
-				fa = (*f)(a + ba * aw[j]);
+				d = ba * aw[j];
+				CALL_OR_BREAK(fa, a + d, d);
 				ir += fa * aw[j + 1];
 				fa *= aw[j + 2];
 				*i += fa;
@@ -155,7 +159,8 @@ void TanhSinh::intde(Float (*f)(const Float &), const Float &a, const Float &b, 
 			do
 			{
 				j += 3;
-				fb = (*f)(b - ba * aw[j]);
+				d = ba * aw[j];
+				CALL_OR_BREAK(fb, b - d, d);
 				ir += fb * aw[j + 1];
 				fb *= aw[j + 2];
 				*i += fb;
@@ -177,20 +182,26 @@ void TanhSinh::intde(Float (*f)(const Float &), const Float &a, const Float &b, 
 	}
 }
 
-TanhSinh::TanhSinh(Float::prec_t prec) : user_prec(prec), safe_prec(prec + 16)
+TanhSinh::TanhSinh(Float::prec_t prec) : TanhSinh(prec, prec * 16) {  }
+
+TanhSinh::TanhSinh(Float::prec_t prec, int points) : user_prec(prec), safe_prec(prec + 16), points(points)
+{}
+
+TanhSinh::~TanhSinh(){ delete[] abscissas_and_weights; }
+
+void TanhSinh::compile()
 {
 	auto last = Float::getDefaultPrecision();
 	Float::setDefaultPrecision(safe_prec);
 	Float tiny = 1.0;
 	tiny.setExponent(mpfr_get_emin() + 1);
 	Float eps = 1.0;
-	eps.setExponent(-prec);
-	abscissas_and_weights = new Float[8000];
-	intdeini(8000, tiny, eps, abscissas_and_weights);
+	eps.setExponent(-user_prec);
+	auto len = 8 + points * 2;
+	abscissas_and_weights = new Float[len];
+	intdeini(len, tiny, eps, abscissas_and_weights);
 	Float::setDefaultPrecision(last);
 }
-
-TanhSinh::~TanhSinh(){ delete[] abscissas_and_weights; }
 
 void TanhSinh::integrate()
 {
@@ -215,3 +226,4 @@ Float &TanhSinh::getLowerBound() { return lower_bound; }
 bool TanhSinh::isConvergentError() { return error_approximation.getSign() == -1; }
 const Float &TanhSinh::getAbsoluteErrorApprox() { return error_approximation; }
 const Float &TanhSinh::getIntegralApprox() { return integral_approximation; }
+Float::exp_t TanhSinh::getRelativeErrorExponent(){ return error_approximation.getExponent() - integral_approximation.getExponent() ; }

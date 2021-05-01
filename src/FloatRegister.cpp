@@ -2,6 +2,7 @@
 #include "Float.hpp"
 #include "FloatRegister.hpp"
 #include <vector>
+#include <emscripten.h>
 
 #define FLOAT_REG_FUNCTION(NAME, FUNC) FloatRegister& NAME(FloatRegister& r) { FUNC(r, r); return r; }; \
 FloatRegister& NAME(const Float& f) { auto& r = FloatRegister::adopt(); FUNC(r, f); return r; };
@@ -155,11 +156,23 @@ void float_register_test()
 
 	TanhSinh integrator(2048);
 
+	integrator.compile();
+
 	EM_ASM(console.timeEnd('Integrator compilation'));
 
-	integrator.setIntegrand([](const Float& x){ return FloatRegister::toFloat(sqrt(x)); });
+	int i = 0;
 
-	integrator.setBounds(0., 1.);
+	integrator.setIntegrand([](Float& y, const Float& x, const Float& xc){
+		if (x < -.5)
+			y = 1 / sqrt(-xc * (-1 + x));
+		else if (x > .5)
+			y = 1 / sqrt((x+1)*xc);
+		else
+			y = 1 / sqrt(1 - x*x);
+	});
+
+
+	integrator.setBounds(-1, 1);
 
 	EM_ASM(console.time('Integration'));
 
@@ -169,7 +182,15 @@ void float_register_test()
 
 	const Float& integral = integrator.getIntegralApprox();
 
-	std::cout << "prec" << integral.getPrecision() << "integral: " << integral.toString() << std::endl;
+	std::cout << "prec " << integral.getPrecision() << "integral: " << integral.toString() << std::endl;
+
+	std::cout << "iteration:" << i << std::endl;
+
+	std::cout << "absolute error " << integrator.getAbsoluteErrorApprox().toString() << std::endl;
+
+	std::cout << "relative error exponent: " << integrator.getRelativeErrorExponent() << std::endl;
+
+	std::cout << "convergent error ? " << integrator.isConvergentError() << std::endl;
 
 	std::cout << "active registers: " << FloatRegister::getActiveRegisterCount() << std::endl;
 

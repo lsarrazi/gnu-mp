@@ -1,5 +1,6 @@
 #include "Float.hpp"
 #include "FloatRegister.hpp"
+#include "quadrature/TanhSinh.hpp"
 #include "utils.hpp"
 #include <emscripten/bind.h>
 
@@ -211,8 +212,8 @@ EMSCRIPTEN_BINDINGS(my_module)
 		.class_function("const_catalan", &Float::op_const_catalan)
 
 		// Library functions
-		.class_function("get_default_rounding_mode", (int(*)(void))mpfr_get_default_rounding_mode)
-		.class_function("get_version", Float::op_get_version )
+		.class_function("get_default_rounding_mode", (int (*)(void))mpfr_get_default_rounding_mode)
+		.class_function("get_version", Float::op_get_version)
 		.class_function("get_patches", Float::op_get_patches)
 		.class_function("buildopt_tls_p", mpfr_buildopt_tls_p)
 		.class_function("buildopt_float128_p", mpfr_buildopt_float128_p)
@@ -303,4 +304,20 @@ EMSCRIPTEN_BINDINGS(my_module)
 		.class_function("flags_set", Float::op_flags_set)
 		.class_function("flags_test", Float::op_flags_test)
 		.class_function("flags_restore", Float::op_flags_restore);
+
+	class_<TanhSinh>("TanhSinh")
+		.constructor<Float::prec_t>()
+		.constructor<Float::prec_t, int>()
+		.function("compile", &TanhSinh::compile)
+		.function("integrate", &TanhSinh::integrate)
+		//.function("setIntegrand", &TanhSinh::setIntegrand)
+		.function("setBounds", &TanhSinh::setBounds)
+		.function("setUpperBound", &TanhSinh::setUpperBound)
+		.function("getUpperBound", &TanhSinh::getUpperBound)
+		.function("setLowerBound", &TanhSinh::setLowerBound)
+		.function("getLowerBound", &TanhSinh::getLowerBound)
+		.function("isConvergentError", &TanhSinh::isConvergentError)
+		.function("getAbsoluteErrorApprox", &TanhSinh::getAbsoluteErrorApprox)
+		.function("getRelativeErrorExponent", &TanhSinh::getRelativeErrorExponent)
+		.function("getIntegralApprox", &TanhSinh::getIntegralApprox);
 };
