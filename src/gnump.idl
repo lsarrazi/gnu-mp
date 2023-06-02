@@ -1,0 +1,31 @@
+
+interface GnuMPFloat
+{
+
+};
+
+[Prefix="TanhSinh::", JSImplementation="Function"]
+callback interface Integrand
+{
+	//[Operator="()"] void call([Ref] GnuMPFloat y, [Const, Ref] GnuMPFloat x, [Const, Ref] GnuMPFloat xc);
+};
+
+interface TanhSinh
+{
+	void TanhSinh(long prec);
+	void TanhSinh(long prec, long points);
+
+	void compile();
+	void integrate();
+	void setIntegrand([Const, Ref] Integrand integrand);
+	void setBounds([Const, Ref] GnuMPFloat a, [Const, Ref] GnuMPFloat b);
+	void setUpperBound([Const, Ref] GnuMPFloat u);
+	[Ref] GnuMPFloat getUpperBound();
+	void setLowerBound([Const, Ref] GnuMPFloat l);
+	[Ref] GnuMPFloat getLowerBound();
+	boolean isConvergentError();
+	[Const, Ref] GnuMPFloat getAbsoluteErrorApprox();
+	long getRelativeErrorExponent();
+	[Const, Ref] GnuMPFloat getIntegralApprox();
+	long getIntegrandCallCount();
+};

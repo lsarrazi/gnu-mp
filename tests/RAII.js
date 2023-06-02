@@ -1,12 +1,25 @@
 
 async function main() {
 
-	const {RAII, Rounding, Float} = await require('../dist/gnu-mp')();
+	const {RAII, Rounding, Float, Module} = await require('../dist/npm/NodeAPI')();
 
-	const save = new Float(128)
+	global.Module = Module;
+
+	const save = new Float(1024)
 	let fake_save;
 
+	save.set(1)
+
 	console.log(Rounding)
+
+	const integrator = new Module.TanhSinh(1024);
+
+	integrator.setIntegrand(() => {console.log('INtegrand !')});
+
+	//integrator.integrate();
+
+
+
 
 	RAII(Float => {
 		const myconst = Float(128).set(3).zeta().mul(2);

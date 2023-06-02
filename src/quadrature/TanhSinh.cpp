@@ -1,23 +1,25 @@
 /*
-	Implementation of the quadrature by Takuya OOURA, thanks to him
+	Implementation of the quadrature by Takuya OOURA
 
 	1996 Takuya OOURA (email: ooura@mmm.t.u-tokyo.ac.jp).
+
+	https://www.kurims.kyoto-u.ac.jp/~ooura/index.html
 */
 
 #include "quadrature/TanhSinh.hpp"
 #include "Float.hpp"
 #include "FloatRegister.hpp"
 
-#define CALL_OR_BREAK(...) if (call(__VA_ARGS__) == 0) break
+#define CALL_INTEGRAND(...) if (callIntegrand(__VA_ARGS__) == 0) break
 
-void TanhSinh::intdeini(int lenaw, const Float &tiny, const Float &eps, Float *aw)
+void TanhSinh::intdeini(int lenaw, const GnuMPFloat &tiny, const GnuMPFloat &eps, GnuMPFloat *aw)
 {
 
 	/* ---- adjustable parameter ---- */
-	const Float efs(0.1), hoff(8.5);
+	const GnuMPFloat efs(0.1), hoff(8.5);
 	/* ------------------------------ */
 	int noff, nk, k, j;
-	Float pi2, tinyln, epsln, h0, ehp, ehm, h, t, ep, em, xw, wg;
+	GnuMPFloat pi2, tinyln, epsln, h0, ehp, ehm, h, t, ep, em, xw, wg;
 
 	pi2 = 2 * atan(1.0);
 	tinyln = -log(tiny);
@@ -71,17 +73,17 @@ void TanhSinh::intdeini(int lenaw, const Float &tiny, const Float &eps, Float *a
 	aw[0] = k - 3;
 }
 
-void TanhSinh::intde(Integrand f, const Float &a, const Float &b, Float *aw,
-					 Float *i, Float *err)
+void TanhSinh::intde(Integrand f, const GnuMPFloat &a, const GnuMPFloat &b, GnuMPFloat *aw,
+					 GnuMPFloat *i, GnuMPFloat *err)
 {
 	int noff, lenawm, nk, k, j, jtmp, jm, m, klim;
-	Float epsh, ba, ir, xa, fa, fb, errt, errh, errd, h, iback, irback, d;
+	GnuMPFloat epsh, ba, ir, xa, fa, fb, errt, errh, errd, h, iback, irback, d;
 	noff = 5;
 	lenawm = (int)(aw[0] + 0.5);
 	nk = (int)(aw[1] + 0.5);
 	epsh = aw[4];
 	ba = b - a;
-	call(*i, (a + b) * aw[noff], ba * aw[noff]);
+	callIntegrand(*i, (a + b) * aw[noff], ba * aw[noff]);
 	ir = *i * aw[noff + 1];
 	*i *= aw[noff + 2];
 	*err = fabs(*i);
@@ -91,8 +93,8 @@ void TanhSinh::intde(Integrand f, const Float &a, const Float &b, Float *aw,
 	{
 		j += 3;
 		xa = ba * aw[j];
-		CALL_OR_BREAK(fa, a + xa, xa);
-		CALL_OR_BREAK(fb, b - xa, xa);
+		CALL_INTEGRAND(fa, a + xa, xa);
+		CALL_INTEGRAND(fb, b - xa, xa);
 		ir += (fa + fb) * aw[j + 1];
 		fa *= aw[j + 2];
 		fb *= aw[j + 2];
@@ -107,7 +109,7 @@ void TanhSinh::intde(Integrand f, const Float &a, const Float &b, Float *aw,
 	{
 		j += 3;
 		d = ba * aw[j];
-		CALL_OR_BREAK(fa, a + d, d);
+		CALL_INTEGRAND(fa, a + d, d);
 		ir += fa * aw[j + 1];
 		fa *= aw[j + 2];
 		*i += fa;
@@ -118,7 +120,7 @@ void TanhSinh::intde(Integrand f, const Float &a, const Float &b, Float *aw,
 	{
 		j += 3;
 		d = ba * aw[j];
-		CALL_OR_BREAK(fb, b - d, d);
+		CALL_INTEGRAND(fb, b - d, d);
 		ir += fb * aw[j + 1];
 		fb *= aw[j + 2];
 		*i += fb;
@@ -139,8 +141,8 @@ void TanhSinh::intde(Integrand f, const Float &a, const Float &b, Float *aw,
 			for (j = k + 3; j <= jtmp; j += 3)
 			{
 				xa = ba * aw[j];
-				CALL_OR_BREAK(fa, a + xa, xa);
-				CALL_OR_BREAK(fb, b - xa, xa);
+				CALL_INTEGRAND(fa, a + xa, xa);
+				CALL_INTEGRAND(fb, b - xa, xa);
 				ir += (fa + fb) * aw[j + 1];
 				*i += (fa + fb) * aw[j + 2];
 			}
@@ -150,7 +152,7 @@ void TanhSinh::intde(Integrand f, const Float &a, const Float &b, Float *aw,
 			{
 				j += 3;
 				d = ba * aw[j];
-				CALL_OR_BREAK(fa, a + d, d);
+				CALL_INTEGRAND(fa, a + d, d);
 				ir += fa * aw[j + 1];
 				fa *= aw[j + 2];
 				*i += fa;
@@ -160,7 +162,7 @@ void TanhSinh::intde(Integrand f, const Float &a, const Float &b, Float *aw,
 			{
 				j += 3;
 				d = ba * aw[j];
-				CALL_OR_BREAK(fb, b - d, d);
+				CALL_INTEGRAND(fb, b - d, d);
 				ir += fb * aw[j + 1];
 				fb *= aw[j + 2];
 				*i += fb;
@@ -182,48 +184,50 @@ void TanhSinh::intde(Integrand f, const Float &a, const Float &b, Float *aw,
 	}
 }
 
-TanhSinh::TanhSinh(Float::prec_t prec) : TanhSinh(prec, prec * 16) {  }
+TanhSinh::TanhSinh(GnuMPFloat::prec_t prec) : TanhSinh(prec, prec * 16) {  }
 
-TanhSinh::TanhSinh(Float::prec_t prec, int points) : user_prec(prec), safe_prec(prec + 16), points(points)
+TanhSinh::TanhSinh(GnuMPFloat::prec_t prec, int points) : user_prec(prec), safe_prec(prec + 16), points(points)
 {}
 
 TanhSinh::~TanhSinh(){ delete[] abscissas_and_weights; }
 
 void TanhSinh::compile()
 {
-	auto last = Float::getDefaultPrecision();
-	Float::setDefaultPrecision(safe_prec);
-	Float tiny = 1.0;
+	auto last = GnuMPFloat::getDefaultPrecision();
+	GnuMPFloat::setDefaultPrecision(safe_prec);
+	GnuMPFloat tiny = 1.0;
 	tiny.setExponent(mpfr_get_emin() + 1);
-	Float eps = 1.0;
+	GnuMPFloat eps = 1.0;
 	eps.setExponent(-user_prec);
 	auto len = 8 + points * 2;
-	abscissas_and_weights = new Float[len];
+	abscissas_and_weights = new GnuMPFloat[len];
 	intdeini(len, tiny, eps, abscissas_and_weights);
-	Float::setDefaultPrecision(last);
+	GnuMPFloat::setDefaultPrecision(last);
 }
 
 void TanhSinh::integrate()
 {
-	auto last = Float::getDefaultPrecision();
-	Float::setDefaultPrecision(safe_prec);
+	call_count = 0;
+	auto last = GnuMPFloat::getDefaultPrecision();
+	GnuMPFloat::setDefaultPrecision(safe_prec);
 	intde(integrand, lower_bound, upper_bound, abscissas_and_weights, &integral_approximation, &error_approximation);
-	Float::op_prec_round(integral_approximation, user_prec);
-	Float::setDefaultPrecision(last);
+	GnuMPFloat::op_prec_round(integral_approximation, user_prec);
+	GnuMPFloat::setDefaultPrecision(last);
 }
 
-void TanhSinh::setBounds(const Float &a, const Float &b)
+void TanhSinh::setBounds(const GnuMPFloat &a, const GnuMPFloat &b)
 {
 	setLowerBound(a);
 	setUpperBound(b);
 }
 
 void TanhSinh::setIntegrand(Integrand i) { integrand = i; }
-void TanhSinh::setUpperBound(const Float &b) { upper_bound = b; }
-Float &TanhSinh::getUpperBound() { return upper_bound; }
-void TanhSinh::setLowerBound(const Float &b) { lower_bound = b; }
-Float &TanhSinh::getLowerBound() { return lower_bound; }
+void TanhSinh::setUpperBound(const GnuMPFloat &b) { upper_bound = b; }
+GnuMPFloat &TanhSinh::getUpperBound() { return upper_bound; }
+void TanhSinh::setLowerBound(const GnuMPFloat &b) { lower_bound = b; }
+GnuMPFloat &TanhSinh::getLowerBound() { return lower_bound; }
 bool TanhSinh::isConvergentError() { return error_approximation.getSign() == -1; }
-const Float &TanhSinh::getAbsoluteErrorApprox() { return error_approximation; }
-const Float &TanhSinh::getIntegralApprox() { return integral_approximation; }
-Float::exp_t TanhSinh::getRelativeErrorExponent(){ return error_approximation.getExponent() - integral_approximation.getExponent() ; }
+const GnuMPFloat &TanhSinh::getAbsoluteErrorApprox() { return error_approximation; }
+const GnuMPFloat &TanhSinh::getIntegralApprox() { return integral_approximation; }
+GnuMPFloat::exp_t TanhSinh::getRelativeErrorExponent(){ return error_approximation.getExponent() - integral_approximation.getExponent() ; }
+int TanhSinh::getIntegrandCallCount() { return call_count; }

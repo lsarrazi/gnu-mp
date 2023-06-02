@@ -3,10 +3,10 @@ CPP=clang++
 MPFR=${HOME}/opt/lib/libmpfr.a
 GMP=${HOME}/opt/lib/libgmp.a
 INCLUDE=${HOME}/opt/include ./includes
-FLAGS=-s NO_EXIT_RUNTIME=0 --bind --no-entry -O3 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1
+FLAGS=-s NO_EXIT_RUNTIME=0 --bind --no-entry -O3 -s ASSERTIONS=1 -s ALLOW_MEMORY_GROWTH=1 --post-js glue.js
 RM=rm -rf
 FILES= Float.cpp FloatRegister.cpp Utils.cpp bindings.cpp quadrature/TanhSinh.cpp
-SRC= $(addprefix ./src/,$(FILES))
+SRC= $(addprefix ./src/,$(FILES)) ./gluewrapper.cpp
 
 all: dist
 

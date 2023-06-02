@@ -5,7 +5,7 @@
 #include <emscripten.h>
 
 #define FLOAT_REG_FUNCTION(NAME, FUNC) FloatRegister& NAME(FloatRegister& r) { FUNC(r, r); return r; }; \
-FloatRegister& NAME(const Float& f) { auto& r = FloatRegister::adopt(); FUNC(r, f); return r; };
+FloatRegister& NAME(const GnuMPFloat& f) { auto& r = FloatRegister::adopt(); FUNC(r, f); return r; };
 
 std::vector<FloatRegister*> FloatRegister::registers = std::vector<FloatRegister *>();
 
@@ -13,16 +13,16 @@ FloatRegister::offset_t FloatRegister::count = 0;
 FloatRegister::offset_t FloatRegister::allocated_count = 0;
 FloatRegister::offset_t FloatRegister::freed_count = 0;
 
-FloatRegister::FloatRegister(double v, offset_t offset) : Float(v), offset(offset) { }
-FloatRegister::FloatRegister(const Float &init, offset_t offset) : Float(init), offset(offset) {}
-FloatRegister::FloatRegister(offset_t offset) : Float(), offset(offset) {}
-FloatRegister &FloatRegister::operator=(const Float &r) { Float::operator=(r); return *this; };
-FloatRegister &FloatRegister::operator=(double r) { Float::operator=(r); return *this; };
+FloatRegister::FloatRegister(double v, offset_t offset) : GnuMPFloat(v), offset(offset) { }
+FloatRegister::FloatRegister(const GnuMPFloat &init, offset_t offset) : GnuMPFloat(init), offset(offset) {}
+FloatRegister::FloatRegister(offset_t offset) : GnuMPFloat(), offset(offset) {}
+FloatRegister &FloatRegister::operator=(const GnuMPFloat &r) { GnuMPFloat::operator=(r); return *this; };
+FloatRegister &FloatRegister::operator=(double r) { GnuMPFloat::operator=(r); return *this; };
 
-Float &operator+=(Float& f, FloatRegister& r) { f += (Float&)r; FloatRegister::release(r); return f; };
-Float &operator-=(Float& f, FloatRegister& r) { f -= (Float&)r; FloatRegister::release(r); return f; };
-Float &operator*=(Float& f, FloatRegister& r) { f *= (Float&)r; FloatRegister::release(r); return f; };
-Float &operator/=(Float& f, FloatRegister& r) { f /= (Float&)r; FloatRegister::release(r); return f; };
+GnuMPFloat &operator+=(GnuMPFloat& f, FloatRegister& r) { f += (GnuMPFloat&)r; FloatRegister::release(r); return f; };
+GnuMPFloat &operator-=(GnuMPFloat& f, FloatRegister& r) { f -= (GnuMPFloat&)r; FloatRegister::release(r); return f; };
+GnuMPFloat &operator*=(GnuMPFloat& f, FloatRegister& r) { f *= (GnuMPFloat&)r; FloatRegister::release(r); return f; };
+GnuMPFloat &operator/=(GnuMPFloat& f, FloatRegister& r) { f /= (GnuMPFloat&)r; FloatRegister::release(r); return f; };
 
 void FloatRegister::release(const FloatRegister &regist)
 {
@@ -48,85 +48,85 @@ int FloatRegister::getActiveRegisterCount() { return count; }
 int FloatRegister::getAllocationCount() { return allocated_count; }
 int FloatRegister::getFreedRegisterCount() { return freed_count; }
 
-FloatRegister::operator int() { FloatRegister::release(*this); return Float::operator int(); }
-FloatRegister::operator long() { FloatRegister::release(*this); return Float::operator long(); }
-FloatRegister::operator unsigned() { FloatRegister::release(*this); return Float::operator unsigned(); }
-FloatRegister::operator unsigned long() { FloatRegister::release(*this); return Float::operator unsigned long(); }
+FloatRegister::operator int() { FloatRegister::release(*this); return GnuMPFloat::operator int(); }
+FloatRegister::operator long() { FloatRegister::release(*this); return GnuMPFloat::operator long(); }
+FloatRegister::operator unsigned() { FloatRegister::release(*this); return GnuMPFloat::operator unsigned(); }
+FloatRegister::operator unsigned long() { FloatRegister::release(*this); return GnuMPFloat::operator unsigned long(); }
 
 FloatRegister& operator-(FloatRegister& r){ r.neg(); return r; }
-FloatRegister& operator-(const Float& f){ auto& r = FloatRegister::adopt(f); r.neg(); return r; }
+FloatRegister& operator-(const GnuMPFloat& f){ auto& r = FloatRegister::adopt(f); r.neg(); return r; }
 
-FloatRegister &operator+(const Float &a, FloatRegister &b) { b += a; return b; }
-FloatRegister &operator+(FloatRegister &b, const Float &a) { b += a; return b; }
+FloatRegister &operator+(const GnuMPFloat &a, FloatRegister &b) { b += a; return b; }
+FloatRegister &operator+(FloatRegister &b, const GnuMPFloat &a) { b += a; return b; }
 FloatRegister &operator+(FloatRegister &a, FloatRegister &b) { b += a; return b; }
-FloatRegister &operator+(const Float &a, const Float &b) { FloatRegister &r = FloatRegister::adopt(a); r += b; return r; }
+FloatRegister &operator+(const GnuMPFloat &a, const GnuMPFloat &b) { FloatRegister &r = FloatRegister::adopt(a); r += b; return r; }
 
-FloatRegister &operator+(const Float &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r += b; return r; }
+FloatRegister &operator+(const GnuMPFloat &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r += b; return r; }
 FloatRegister &operator+(FloatRegister &b, double a) { b += a; return b; }
 FloatRegister &operator+(double a, FloatRegister &b) { b += a; return b; }
-FloatRegister &operator+(double a, const Float &b) { FloatRegister &r = FloatRegister::adopt(b); r += a; return r; }
+FloatRegister &operator+(double a, const GnuMPFloat &b) { FloatRegister &r = FloatRegister::adopt(b); r += a; return r; }
 
-FloatRegister &operator-(const Float &a, FloatRegister &b) { b.neg(); b += a; return b; }
-FloatRegister &operator-(FloatRegister &b, const Float &a) { b -= a; return b; }
+FloatRegister &operator-(const GnuMPFloat &a, FloatRegister &b) { b.neg(); b += a; return b; }
+FloatRegister &operator-(FloatRegister &b, const GnuMPFloat &a) { b -= a; return b; }
 FloatRegister &operator-(FloatRegister &a, FloatRegister &b) { a -= b; return a; }
-FloatRegister &operator-(const Float &a, const Float &b) { FloatRegister &r = FloatRegister::adopt(a); r -= b; return r; }
+FloatRegister &operator-(const GnuMPFloat &a, const GnuMPFloat &b) { FloatRegister &r = FloatRegister::adopt(a); r -= b; return r; }
 
-FloatRegister &operator-(const Float &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r -= b; return r; }
+FloatRegister &operator-(const GnuMPFloat &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r -= b; return r; }
 FloatRegister &operator-(FloatRegister &b, double a) { b -= a; return b; }
 FloatRegister &operator-(double a, FloatRegister &b) { b.neg(); b += a; return b; }
-FloatRegister &operator-(double a, const Float &b) { FloatRegister &r = FloatRegister::adopt(b); r.neg(); r += a; return r; }
+FloatRegister &operator-(double a, const GnuMPFloat &b) { FloatRegister &r = FloatRegister::adopt(b); r.neg(); r += a; return r; }
 
-FloatRegister &operator*(const Float &a, FloatRegister &b) { b *= a; return b; }
-FloatRegister &operator*(FloatRegister &b, const Float &a) { b *= a; return b; }
+FloatRegister &operator*(const GnuMPFloat &a, FloatRegister &b) { b *= a; return b; }
+FloatRegister &operator*(FloatRegister &b, const GnuMPFloat &a) { b *= a; return b; }
 FloatRegister &operator*(FloatRegister &a, FloatRegister &b) { b *= a; return b; }
-FloatRegister &operator*(const Float &a, const Float &b) { FloatRegister &r = FloatRegister::adopt(a); r *= b; return r; }
+FloatRegister &operator*(const GnuMPFloat &a, const GnuMPFloat &b) { FloatRegister &r = FloatRegister::adopt(a); r *= b; return r; }
 
-FloatRegister &operator*(const Float &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r *= b; return r; }
+FloatRegister &operator*(const GnuMPFloat &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r *= b; return r; }
 FloatRegister &operator*(FloatRegister &b, double a) { b *= a; return b; }
 FloatRegister &operator*(double a, FloatRegister &b) { b *= a; return b; }
-FloatRegister &operator*(double a, const Float &b) { FloatRegister &r = FloatRegister::adopt(b); r *= a; return r; }
+FloatRegister &operator*(double a, const GnuMPFloat &b) { FloatRegister &r = FloatRegister::adopt(b); r *= a; return r; }
 
-FloatRegister &operator/(const Float &a, FloatRegister &b) { Float::op_div(b, a, val((Float&)b)); return b; }
-FloatRegister &operator/(FloatRegister &b, const Float &a) { b /= a; return b; }
+FloatRegister &operator/(const GnuMPFloat &a, FloatRegister &b) { GnuMPFloat::op_div(b, a, val((GnuMPFloat&)b)); return b; }
+FloatRegister &operator/(FloatRegister &b, const GnuMPFloat &a) { b /= a; return b; }
 FloatRegister &operator/(FloatRegister &b, FloatRegister &a) { b /= a; return b; }
-FloatRegister &operator/(const Float &a, const Float &b) { FloatRegister &r = FloatRegister::adopt(a); r /= b; return r; }
+FloatRegister &operator/(const GnuMPFloat &a, const GnuMPFloat &b) { FloatRegister &r = FloatRegister::adopt(a); r /= b; return r; }
 
-FloatRegister &operator/(const Float &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r /= b; return r; }
+FloatRegister &operator/(const GnuMPFloat &a, double b) { FloatRegister &r = FloatRegister::adopt(a); r /= b; return r; }
 FloatRegister &operator/(FloatRegister &b, double a) { b /= a; return b; }
 FloatRegister &operator/(double a, FloatRegister &b) { FloatRegister &r = FloatRegister::adopt(a); r /= b; return r; }
-FloatRegister &operator/(double a, const Float &b) { FloatRegister &r = FloatRegister::adopt(a); r /= b; return r; }
+FloatRegister &operator/(double a, const GnuMPFloat &b) { FloatRegister &r = FloatRegister::adopt(a); r /= b; return r; }
 
-bool operator<(FloatRegister& a, FloatRegister& b) { bool r = (Float&)a < (Float&)b; FloatRegister::release(a); FloatRegister::release(b); return r; }
-bool operator<(FloatRegister& a, const Float& b) { bool r = (Float&)a < (Float&)b; FloatRegister::release(a); return r; }
-bool operator<(const Float& a, FloatRegister& b) { bool r = (Float&)a < (Float&)b; FloatRegister::release(b); return r; }
+bool operator<(FloatRegister& a, FloatRegister& b) { bool r = (GnuMPFloat&)a < (GnuMPFloat&)b; FloatRegister::release(a); FloatRegister::release(b); return r; }
+bool operator<(FloatRegister& a, const GnuMPFloat& b) { bool r = (GnuMPFloat&)a < (GnuMPFloat&)b; FloatRegister::release(a); return r; }
+bool operator<(const GnuMPFloat& a, FloatRegister& b) { bool r = (GnuMPFloat&)a < (GnuMPFloat&)b; FloatRegister::release(b); return r; }
 
-bool operator==(FloatRegister& a, FloatRegister& b) { bool r = (Float&)a == (Float&)b; FloatRegister::release(a); FloatRegister::release(b); return r; }
-bool operator==(FloatRegister& a, const Float& b) { bool r = (Float&)a == (Float&)b; FloatRegister::release(a); return r; }
-bool operator==(const Float& a, FloatRegister& b) { bool r = (Float&)a == (Float&)b; FloatRegister::release(b); return r; }
+bool operator==(FloatRegister& a, FloatRegister& b) { bool r = (GnuMPFloat&)a == (GnuMPFloat&)b; FloatRegister::release(a); FloatRegister::release(b); return r; }
+bool operator==(FloatRegister& a, const GnuMPFloat& b) { bool r = (GnuMPFloat&)a == (GnuMPFloat&)b; FloatRegister::release(a); return r; }
+bool operator==(const GnuMPFloat& a, FloatRegister& b) { bool r = (GnuMPFloat&)a == (GnuMPFloat&)b; FloatRegister::release(b); return r; }
 
 bool operator!=(FloatRegister& a, FloatRegister& b) { return !(a == b); };
-bool operator!=(FloatRegister& a, const Float& b) { return !(a == b); };
-bool operator!=(const Float& a, FloatRegister& b) { return !(a == b); };
+bool operator!=(FloatRegister& a, const GnuMPFloat& b) { return !(a == b); };
+bool operator!=(const GnuMPFloat& a, FloatRegister& b) { return !(a == b); };
 
 bool operator>(FloatRegister& a, FloatRegister& b) { return b < a; };
-bool operator>(FloatRegister& a, const Float& b) { return b < a; };
-bool operator>(const Float& a, FloatRegister& b) { return b < a; };
+bool operator>(FloatRegister& a, const GnuMPFloat& b) { return b < a; };
+bool operator>(const GnuMPFloat& a, FloatRegister& b) { return b < a; };
 
 bool operator<=(FloatRegister& a, FloatRegister& b) { return !(b < a); };
-bool operator<=(FloatRegister& a, const Float& b) { return !(b < a); };
-bool operator<=(const Float& a, FloatRegister& b) { return !(b < a); };
+bool operator<=(FloatRegister& a, const GnuMPFloat& b) { return !(b < a); };
+bool operator<=(const GnuMPFloat& a, FloatRegister& b) { return !(b < a); };
 
 bool operator>=(FloatRegister& a, FloatRegister& b) { return !(a < b); };
-bool operator>=(FloatRegister& a, const Float& b) { return !(a < b); };
-bool operator>=(const Float& a, FloatRegister& b) { return !(a < b); };
+bool operator>=(FloatRegister& a, const GnuMPFloat& b) { return !(a < b); };
+bool operator>=(const GnuMPFloat& a, FloatRegister& b) { return !(a < b); };
 
-Float FloatRegister::toFloat(FloatRegister& r) { FloatRegister::release(r); return r; } 
+GnuMPFloat FloatRegister::toFloat(FloatRegister& r) { FloatRegister::release(r); return r; } 
 
-FLOAT_REG_FUNCTION(atan, Float::op_atan)
-FLOAT_REG_FUNCTION(log, Float::op_log)
-FLOAT_REG_FUNCTION(exp, Float::op_exp)
-FLOAT_REG_FUNCTION(sqrt, Float::op_sqrt)
-FLOAT_REG_FUNCTION(fabs, Float::op_abs)
+FLOAT_REG_FUNCTION(atan, GnuMPFloat::op_atan)
+FLOAT_REG_FUNCTION(log, GnuMPFloat::op_log)
+FLOAT_REG_FUNCTION(exp, GnuMPFloat::op_exp)
+FLOAT_REG_FUNCTION(sqrt, GnuMPFloat::op_sqrt)
+FLOAT_REG_FUNCTION(fabs, GnuMPFloat::op_abs)
 
 #include "quadrature/TanhSinh.hpp"
 #include <emscripten.h>
@@ -162,7 +162,7 @@ void float_register_test()
 
 	int i = 0;
 
-	integrator.setIntegrand([](Float& y, const Float& x, const Float& xc){
+	integrator.setIntegrand([](GnuMPFloat& y, const GnuMPFloat& x, const GnuMPFloat& xc){
 		if (x < -.5)
 			y = 1 / sqrt(-xc * (-1 + x));
 		else if (x > .5)
@@ -180,9 +180,11 @@ void float_register_test()
 
 	EM_ASM(console.timeEnd('Integration'));
 
-	const Float& integral = integrator.getIntegralApprox();
+	const GnuMPFloat& integral = integrator.getIntegralApprox();
 
-	std::cout << "prec " << integral.getPrecision() << "integral: " << integral.toString() << std::endl;
+	std::cout << "prec: " << integral.getPrecision() << std::endl << "integral: " << integral.toString() << std::endl;
+	
+	std::cout << "calls: " << integrator.getIntegrandCallCount() << std::endl;
 
 	std::cout << "iteration:" << i << std::endl;
 
@@ -197,6 +199,8 @@ void float_register_test()
 	std::cout << "number of alloc: " << FloatRegister::getAllocationCount() << std::endl;
 
 	std::cout << "freed registers: " << FloatRegister::getFreedRegisterCount() << std::endl;
+
+	
 
 	FloatRegister::clean();
 

@@ -7,7 +7,7 @@
 
 #include "Float.hpp"
 
-class FloatRegister : public Float
+class FloatRegister : public GnuMPFloat
 {
 	typedef int offset_t;
 
@@ -19,9 +19,9 @@ class FloatRegister : public Float
 public:
 	offset_t offset;
 
-	FloatRegister(const Float &init, offset_t offset);
+	FloatRegister(const GnuMPFloat &init, offset_t offset);
 	
-	FloatRegister &operator=(const Float &);
+	FloatRegister &operator=(const GnuMPFloat &);
 	FloatRegister &operator=(double);
 	FloatRegister(double, offset_t);
 	FloatRegister(offset_t);
@@ -54,7 +54,7 @@ public:
 	static int getActiveRegisterCount();
 	static int getAllocationCount();
 	static int getFreedRegisterCount();
-	static Float toFloat(FloatRegister& r);
+	static GnuMPFloat toFloat(FloatRegister& r);
 	
 	explicit operator int();
 	explicit operator long();
@@ -63,89 +63,89 @@ public:
 
 };
 
-Float &operator+=(Float&, FloatRegister&);
-Float &operator-=(Float&, FloatRegister&);
-Float &operator*=(Float&, FloatRegister&);
-Float &operator/=(Float&, FloatRegister&);
+GnuMPFloat &operator+=(GnuMPFloat&, FloatRegister&);
+GnuMPFloat &operator-=(GnuMPFloat&, FloatRegister&);
+GnuMPFloat &operator*=(GnuMPFloat&, FloatRegister&);
+GnuMPFloat &operator/=(GnuMPFloat&, FloatRegister&);
 
 FloatRegister& operator-(FloatRegister&);
-FloatRegister& operator-(const Float &);
+FloatRegister& operator-(const GnuMPFloat &);
 
-FloatRegister &operator+(const Float &a, FloatRegister &b);
-FloatRegister &operator+(FloatRegister &b, const Float &a);
+FloatRegister &operator+(const GnuMPFloat &a, FloatRegister &b);
+FloatRegister &operator+(FloatRegister &b, const GnuMPFloat &a);
 FloatRegister &operator+(FloatRegister &a, FloatRegister &b);
-FloatRegister &operator+(const Float &a, const Float &b);
-FloatRegister &operator+(const Float &a, double b);
+FloatRegister &operator+(const GnuMPFloat &a, const GnuMPFloat &b);
+FloatRegister &operator+(const GnuMPFloat &a, double b);
 FloatRegister &operator+(FloatRegister &b, double a);
 FloatRegister &operator+(double a, FloatRegister &b);
-FloatRegister &operator+(double a, const Float &b);
+FloatRegister &operator+(double a, const GnuMPFloat &b);
 
-FloatRegister &operator-(const Float &a, FloatRegister &b);
-FloatRegister &operator-(FloatRegister &b, const Float &a);
+FloatRegister &operator-(const GnuMPFloat &a, FloatRegister &b);
+FloatRegister &operator-(FloatRegister &b, const GnuMPFloat &a);
 FloatRegister &operator-(FloatRegister &a, FloatRegister &b);
-FloatRegister &operator-(const Float &a, const Float &b);
-FloatRegister &operator-(const Float &a, double b);
+FloatRegister &operator-(const GnuMPFloat &a, const GnuMPFloat &b);
+FloatRegister &operator-(const GnuMPFloat &a, double b);
 FloatRegister &operator-(FloatRegister &b, double a);
 FloatRegister &operator-(double a, FloatRegister &b);
-FloatRegister &operator-(double a, const Float &b);
+FloatRegister &operator-(double a, const GnuMPFloat &b);
 
-FloatRegister &operator*(const Float &a, FloatRegister &b);
-FloatRegister &operator*(FloatRegister &b, const Float &a);
+FloatRegister &operator*(const GnuMPFloat &a, FloatRegister &b);
+FloatRegister &operator*(FloatRegister &b, const GnuMPFloat &a);
 FloatRegister &operator*(FloatRegister &a, FloatRegister &b);
-FloatRegister &operator*(const Float &a, const Float &b);
-FloatRegister &operator*(const Float &a, double b);
+FloatRegister &operator*(const GnuMPFloat &a, const GnuMPFloat &b);
+FloatRegister &operator*(const GnuMPFloat &a, double b);
 FloatRegister &operator*(FloatRegister &b, double a);
 FloatRegister &operator*(double a, FloatRegister &b);
-FloatRegister &operator*(double a, const Float &b);
+FloatRegister &operator*(double a, const GnuMPFloat &b);
 
-FloatRegister &operator/(const Float &a, FloatRegister &b);
-FloatRegister &operator/(FloatRegister &b, const Float &a);
+FloatRegister &operator/(const GnuMPFloat &a, FloatRegister &b);
+FloatRegister &operator/(FloatRegister &b, const GnuMPFloat &a);
 FloatRegister &operator/(FloatRegister &a, FloatRegister &b);
-FloatRegister &operator/(const Float &a, const Float &b);
-FloatRegister &operator/(const Float &a, double b);
+FloatRegister &operator/(const GnuMPFloat &a, const GnuMPFloat &b);
+FloatRegister &operator/(const GnuMPFloat &a, double b);
 FloatRegister &operator/(FloatRegister &b, double a);
 FloatRegister &operator/(double a, FloatRegister &b);
-FloatRegister &operator/(double a, const Float &b);
+FloatRegister &operator/(double a, const GnuMPFloat &b);
 
 bool operator<(FloatRegister& a, FloatRegister& b);
-bool operator<(FloatRegister& a, const Float& b);
-bool operator<(const Float& a, FloatRegister& b);
+bool operator<(FloatRegister& a, const GnuMPFloat& b);
+bool operator<(const GnuMPFloat& a, FloatRegister& b);
 
 bool operator==(FloatRegister& a, FloatRegister& b);
-bool operator==(FloatRegister& a, const Float& b);
-bool operator==(const Float& a, FloatRegister& b);
+bool operator==(FloatRegister& a, const GnuMPFloat& b);
+bool operator==(const GnuMPFloat& a, FloatRegister& b);
 
 bool operator!=(FloatRegister& a, FloatRegister& b);
-bool operator!=(FloatRegister& a, const Float& b);
-bool operator!=(const Float& a, FloatRegister& b);
+bool operator!=(FloatRegister& a, const GnuMPFloat& b);
+bool operator!=(const GnuMPFloat& a, FloatRegister& b);
 
 bool operator>(FloatRegister& a, FloatRegister& b);
-bool operator>(FloatRegister& a, const Float& b);
-bool operator>(const Float& a, FloatRegister& b);
+bool operator>(FloatRegister& a, const GnuMPFloat& b);
+bool operator>(const GnuMPFloat& a, FloatRegister& b);
 
 bool operator<=(FloatRegister& a, FloatRegister& b);
-bool operator<=(FloatRegister& a, const Float& b);
-bool operator<=(const Float& a, FloatRegister& b);
+bool operator<=(FloatRegister& a, const GnuMPFloat& b);
+bool operator<=(const GnuMPFloat& a, FloatRegister& b);
 
 bool operator>=(FloatRegister& a, FloatRegister& b);
-bool operator>=(FloatRegister& a, const Float& b);
-bool operator>=(const Float& a, FloatRegister& b);
+bool operator>=(FloatRegister& a, const GnuMPFloat& b);
+bool operator>=(const GnuMPFloat& a, FloatRegister& b);
 
 
 
 FloatRegister& atan(FloatRegister&);
-FloatRegister& atan(const Float&);
+FloatRegister& atan(const GnuMPFloat&);
 
 FloatRegister& log(FloatRegister&);
-FloatRegister& log(const Float&);
+FloatRegister& log(const GnuMPFloat&);
 
 FloatRegister& exp(FloatRegister&);
-FloatRegister& exp(const Float&);
+FloatRegister& exp(const GnuMPFloat&);
 
 FloatRegister& sqrt(FloatRegister&);
-FloatRegister& sqrt(const Float&);
+FloatRegister& sqrt(const GnuMPFloat&);
 
 FloatRegister& fabs(FloatRegister&);
-FloatRegister& fabs(const Float&);
+FloatRegister& fabs(const GnuMPFloat&);
 
 void float_register_test();
